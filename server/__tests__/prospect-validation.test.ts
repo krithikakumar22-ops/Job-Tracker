@@ -18,6 +18,6 @@ describe("prospect creation validation", () => {
     });
 
     expect(result.valid).toBe(false);
-    expect(result.errors).toContain("Role title is required");
+    expect(result.errors).toContain("Role title is required HAHA");
   });
 });
