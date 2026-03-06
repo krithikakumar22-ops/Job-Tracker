@@ -69,6 +69,7 @@ function KanbanColumn({
         </Badge>
       </div>
       <div className="flex items-center gap-1 px-2 py-1.5 border-b border-border/30">
+        <span className="text-[10px] text-muted-foreground font-medium mr-1 whitespace-nowrap">Interest Level</span>
         {FILTER_OPTIONS.map((opt) => (
           <button
             key={opt.value}
