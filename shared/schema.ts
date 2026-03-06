@@ -21,9 +21,22 @@ export const prospects = pgTable("prospects", {
   jobUrl: text("job_url"),
   status: text("status").notNull().default("Bookmarked"),
   interestLevel: text("interest_level").notNull().default("Medium"),
+  salary: text("salary"),
   notes: text("notes"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+export function formatSalary(value: string): string {
+  const digits = value.replace(/[^0-9]/g, "");
+  if (!digits) return "";
+  return "$" + digits.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+export function parseSalaryToStorageFormat(value: string): string | null {
+  const digits = value.replace(/[^0-9]/g, "");
+  if (!digits) return null;
+  return "$" + digits.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
 
 export const insertProspectSchema = createInsertSchema(prospects).omit({
   id: true,
@@ -34,6 +47,7 @@ export const insertProspectSchema = createInsertSchema(prospects).omit({
   status: z.enum(STATUSES).default("Bookmarked"),
   interestLevel: z.enum(INTEREST_LEVELS).default("Medium"),
   jobUrl: z.string().optional().nullable(),
+  salary: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
 });
 

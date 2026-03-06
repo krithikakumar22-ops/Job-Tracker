@@ -1,4 +1,4 @@
-import { STATUSES, INTEREST_LEVELS } from "@shared/schema";
+import { STATUSES, INTEREST_LEVELS, formatSalary, parseSalaryToStorageFormat } from "@shared/schema";
 
 export function getNextStatus(currentStatus: string): string {
   const terminalStatuses = ["Offer", "Rejected", "Withdrawn"];
@@ -36,6 +36,14 @@ export function validateProspect(data: Record<string, unknown>): { valid: boolea
   if (data.interestLevel !== undefined) {
     if (!INTEREST_LEVELS.includes(data.interestLevel as (typeof INTEREST_LEVELS)[number])) {
       errors.push(`Interest level must be one of: ${INTEREST_LEVELS.join(", ")}`);
+    }
+  }
+
+  if (data.salary !== undefined && data.salary !== null && data.salary !== "") {
+    const salaryStr = String(data.salary);
+    const digits = salaryStr.replace(/[^0-9]/g, "");
+    if (!digits) {
+      errors.push("Salary must contain at least one digit");
     }
   }
 
