@@ -75,6 +75,60 @@ describe("prospect creation validation", () => {
     expect(result.valid).toBe(false);
     expect(result.errors).toContain("Salary must contain at least one digit");
   });
+
+  test("accepts coffeeChat as true", () => {
+    const result = validateProspect({
+      companyName: "Google",
+      roleTitle: "Software Engineer",
+      coffeeChat: true,
+    });
+
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  test("accepts coffeeChat as false", () => {
+    const result = validateProspect({
+      companyName: "Google",
+      roleTitle: "Software Engineer",
+      coffeeChat: false,
+    });
+
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  test("accepts prospect without coffeeChat field", () => {
+    const result = validateProspect({
+      companyName: "Google",
+      roleTitle: "Software Engineer",
+    });
+
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  test("accepts coffeeChat as null", () => {
+    const result = validateProspect({
+      companyName: "Google",
+      roleTitle: "Software Engineer",
+      coffeeChat: null,
+    });
+
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  test("rejects coffeeChat as non-boolean", () => {
+    const result = validateProspect({
+      companyName: "Google",
+      roleTitle: "Software Engineer",
+      coffeeChat: "yes" as unknown,
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain("Coffee chat must be a boolean value");
+  });
 });
 
 describe("formatSalary", () => {

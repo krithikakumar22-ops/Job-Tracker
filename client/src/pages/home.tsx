@@ -17,12 +17,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 
 type InterestFilter = "All" | typeof INTEREST_LEVELS[number];
+type CoffeeChatFilter = "All" | "Yes" | "No";
 
 const FILTER_OPTIONS: { value: InterestFilter; label: string }[] = [
   { value: "All", label: "All" },
   { value: "High", label: "🔥 High" },
   { value: "Medium", label: "👍 Medium" },
   { value: "Low", label: "🤷 Low" },
+];
+
+const COFFEE_CHAT_FILTER_OPTIONS: { value: CoffeeChatFilter; label: string }[] = [
+  { value: "All", label: "All" },
+  { value: "Yes", label: "Yes" },
+  { value: "No", label: "No" },
 ];
 
 const columnColors: Record<string, string> = {
@@ -45,12 +52,20 @@ function KanbanColumn({
   isLoading: boolean;
 }) {
   const [filter, setFilter] = useState<InterestFilter>("All");
+  const [coffeeChatFilter, setCoffeeChatFilter] = useState<CoffeeChatFilter>("All");
   const statusSlug = status.replace(/\s+/g, "-").toLowerCase();
+  const isApplied = status === "Applied";
 
-  const filteredProspects =
+  let filteredProspects =
     filter === "All"
       ? prospects
       : prospects.filter((p) => p.interestLevel === filter);
+
+  if (isApplied && coffeeChatFilter !== "All") {
+    filteredProspects = filteredProspects.filter((p) =>
+      coffeeChatFilter === "Yes" ? p.coffeeChat : !p.coffeeChat
+    );
+  }
 
   return (
     <div
@@ -85,6 +100,25 @@ function KanbanColumn({
           </button>
         ))}
       </div>
+      {isApplied && (
+        <div className="flex items-center gap-1 px-2 py-1.5 border-b border-border/30">
+          <span className="text-[10px] text-muted-foreground font-medium mr-1 whitespace-nowrap">Coffee Chat</span>
+          {COFFEE_CHAT_FILTER_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setCoffeeChatFilter(opt.value)}
+              className={`px-2 py-0.5 text-[11px] rounded-full transition-colors whitespace-nowrap ${
+                coffeeChatFilter === opt.value
+                  ? "bg-primary text-primary-foreground font-medium"
+                  : "bg-muted hover:bg-muted-foreground/10 text-muted-foreground"
+              }`}
+              data-testid={`filter-coffee-${opt.value.toLowerCase()}-${statusSlug}`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="flex-1 overflow-y-auto px-2 py-2">
         <div className="space-y-2">
           {isLoading ? (
@@ -100,7 +134,7 @@ function KanbanColumn({
             </div>
           ) : (
             filteredProspects.map((prospect) => (
-              <ProspectCard key={prospect.id} prospect={prospect} />
+              <ProspectCard key={prospect.id} prospect={prospect} showCoffeeChat={isApplied} />
             ))
           )}
         </div>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Prospect } from "@shared/schema";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Trash2, Pencil, Flame, ThumbsUp, Minus, DollarSign } from "lucide-react";
+import { ExternalLink, Trash2, Pencil, Flame, ThumbsUp, Minus, DollarSign, Coffee } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -41,9 +41,23 @@ function InterestIndicator({ level }: { level: string }) {
   }
 }
 
-export function ProspectCard({ prospect }: { prospect: Prospect }) {
+export function ProspectCard({ prospect, showCoffeeChat }: { prospect: Prospect; showCoffeeChat?: boolean }) {
   const { toast } = useToast();
   const [editOpen, setEditOpen] = useState(false);
+
+  const coffeeChatMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("PATCH", `/api/prospects/${prospect.id}`, {
+        coffeeChat: !prospect.coffeeChat,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/prospects"] });
+    },
+    onError: () => {
+      toast({ title: "Failed to update coffee chat", variant: "destructive" });
+    },
+  });
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -105,6 +119,24 @@ export function ProspectCard({ prospect }: { prospect: Prospect }) {
 
         <div className="flex items-center gap-1.5 flex-wrap">
           <InterestIndicator level={prospect.interestLevel} />
+          {showCoffeeChat && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                coffeeChatMutation.mutate();
+              }}
+              disabled={coffeeChatMutation.isPending}
+              className={`inline-flex items-center gap-1 text-xs font-medium rounded-full px-2 py-0.5 transition-colors ${
+                prospect.coffeeChat
+                  ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+                  : "bg-muted text-muted-foreground hover:bg-muted-foreground/10"
+              }`}
+              data-testid={`button-coffee-chat-${prospect.id}`}
+            >
+              <Coffee className="w-3 h-3" />
+              {prospect.coffeeChat ? "Coffee Chat" : "No Coffee Chat"}
+            </button>
+          )}
         </div>
 
         {prospect.salary && (

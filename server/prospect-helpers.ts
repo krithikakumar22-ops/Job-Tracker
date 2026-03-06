@@ -47,6 +47,12 @@ export function validateProspect(data: Record<string, unknown>): { valid: boolea
     }
   }
 
+  if (data.coffeeChat !== undefined && data.coffeeChat !== null) {
+    if (typeof data.coffeeChat !== "boolean") {
+      errors.push("Coffee chat must be a boolean value");
+    }
+  }
+
   return { valid: errors.length === 0, errors };
 }
 
