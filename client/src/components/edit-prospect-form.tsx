@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertProspectSchema, STATUSES, INTEREST_LEVELS } from "@shared/schema";
+import { insertProspectSchema, STATUSES, INTEREST_LEVELS, formatSalary, parseSalaryToStorageFormat } from "@shared/schema";
 import type { InsertProspect, Prospect } from "@shared/schema";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -41,13 +41,18 @@ export function EditProspectForm({ prospect, onSuccess }: EditProspectFormProps)
       jobUrl: prospect.jobUrl ?? "",
       status: prospect.status as InsertProspect["status"],
       interestLevel: prospect.interestLevel as InsertProspect["interestLevel"],
+      salary: prospect.salary ?? "",
       notes: prospect.notes ?? "",
     },
   });
 
   const mutation = useMutation({
     mutationFn: async (data: InsertProspect) => {
-      await apiRequest("PATCH", `/api/prospects/${prospect.id}`, data);
+      const payload = {
+        ...data,
+        salary: data.salary ? parseSalaryToStorageFormat(data.salary) : null,
+      };
+      await apiRequest("PATCH", `/api/prospects/${prospect.id}`, payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/prospects"] });
@@ -160,6 +165,29 @@ export function EditProspectForm({ prospect, onSuccess }: EditProspectFormProps)
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="salary"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Target Salary (optional)</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="e.g. $100,000"
+                  {...field}
+                  value={field.value ?? ""}
+                  onChange={(e) => {
+                    const formatted = formatSalary(e.target.value);
+                    field.onChange(formatted);
+                  }}
+                  data-testid="input-edit-salary"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
